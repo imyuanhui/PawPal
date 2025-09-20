@@ -14,6 +14,13 @@ export default function MatchStack() {
           headerShown: false 
         }} 
       />
+      <Stack.Screen 
+        name="[id]" 
+        options={{ 
+          title: 'Schedule Meeting',
+          headerShown: true 
+        }} 
+      />
     </Stack>
   );
 }

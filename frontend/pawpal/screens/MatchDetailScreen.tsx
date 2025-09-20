@@ -1,10 +1,12 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../store/store';
 import { Match } from '../types/domain';
 
 export default function MatchDetailScreen({ route }: any) {
+  const insets = useSafeAreaInsets();
   const { matchId } = route.params;
   const { matches, updateMatch, me } = useStore();
   const m = matches.find(x => x.id === matchId) as Match | undefined;
@@ -46,15 +48,18 @@ export default function MatchDetailScreen({ route }: any) {
   };
   
   const accept = () => {
-    updateMatch({ 
-      id: m.id, 
-      other: m.other, 
-      state: 'confirmed', 
-      startAt: m.startAt, 
-      place: m.place, 
-      duration: m.duration
-    });
-    Alert.alert('Meeting Confirmed!', 'You have confirmed the meeting.');
+    // Check if match has the required properties before accessing them
+    if (m.state === 'proposed' && 'startAt' in m && 'place' in m && 'duration' in m) {
+      updateMatch({ 
+        id: m.id, 
+        other: m.other, 
+        state: 'confirmed', 
+        startAt: m.startAt, 
+        place: m.place, 
+        duration: m.duration
+      });
+      Alert.alert('Meeting Confirmed!', 'You have confirmed the meeting.');
+    }
   };
 
   const decline = () => {
@@ -105,7 +110,11 @@ export default function MatchDetailScreen({ route }: any) {
   const matchStatus = getMatchStatus();
 
   return (
-    <View style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
         <Text style={styles.name}>{m.other.name}</Text>
         <Text style={styles.subtitle}>{m.other.city} · {m.other.role}</Text>
@@ -237,7 +246,7 @@ export default function MatchDetailScreen({ route }: any) {
           </Text>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

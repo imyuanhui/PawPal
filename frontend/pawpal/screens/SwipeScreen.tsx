@@ -253,7 +253,7 @@ export default function SwipeScreen() {
           <View style={styles.modalCard}>
             <Text style={{ fontSize:22, fontWeight:'700', marginBottom:8 }}>It's a match!</Text>
             <Text style={{ color:'#6B7280', marginBottom:16 }}>You both liked each other.</Text>
-            <TouchableOpacity style={[styles.cta]} onPress={() => { setShow(false); router.push(`/match/${matchId}`); }}>
+            <TouchableOpacity style={[styles.cta]} onPress={() => { setShow(false); router.push(`/matches/${matchId}`); }}>
               <Text style={{ color:'#fff', fontWeight:'600' }}>Set time & place</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>setShow(false)}><Text style={{ marginTop:12 }}>Keep swiping</Text></TouchableOpacity>
