@@ -1,0 +1,64 @@
+// store/store.ts
+import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import { Match, Profile } from '../types/domain';
+
+// Add this function here:
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+type Store = {
+  me: Profile;
+  setMe: (p: Profile) => void;
+  feed: Profile[];
+  like: (id: string) => Match | null;
+  pass: (id: string) => void;
+  matches: Match[];
+  updateMatch: (m: Match) => void;
+};
+
+const Ctx = createContext<Store | undefined>(undefined);
+
+// ✅ Return type MUST be JSX.Element (or ReactElement)
+export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [me, setMe] = useState<Profile>({ id: 'me', name: 'You', role: 'both', city: 'Dublin' });
+  const [profiles] = useState<Profile[]>([
+    { id: 'u1', name: 'Sophie', role: 'owner', city: 'Dublin', prompt1: 'Evening park loops', largeOk: true },
+    { id: 'u2', name: 'Liam', role: 'volunteer', city: 'Dublin', prompt2: 'Handled big breeds' },
+    { id: 'u3', name: 'Ava', role: 'owner', city: 'Dublin' },
+  ]);
+  const [swiped, setSwiped] = useState<Record<string, 'left' | 'right'>>({});
+  const [matches, setMatches] = useState<Match[]>([]);
+
+  const feed = useMemo(
+    () =>
+      profiles.filter(
+        (p) =>
+          p.id !== 'me' &&
+          (me.role === 'both' ? true : me.role === 'owner' ? p.role !== 'owner' : p.role !== 'volunteer') &&
+          !swiped[p.id],
+      ),
+    [profiles, swiped, me.role],
+  );
+
+  const like = (id: string): Match | null => {
+    setSwiped((s) => ({ ...s, [id]: 'right' }));
+    const likedBack = Math.random() < 0.4;
+    if (!likedBack) return null;
+    const other = profiles.find((p) => p.id === id)!;
+    const m: Match = { id: generateId(), other, state: 'none' };
+    setMatches((prev) => [m, ...prev]);
+    return m;
+  };
+
+  const pass = (id: string) => setSwiped((s) => ({ ...s, [id]: 'left' }));
+
+  const updateMatch = (m: Match) => setMatches((prev) => prev.map((x) => (x.id === m.id ? m : x)));
+
+  const value: Store = { me, setMe, feed, like, pass, matches, updateMatch };
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+};
+
+export const useStore = (): Store => {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error('useStore must be used within StoreProvider');
+  return ctx;
+};
